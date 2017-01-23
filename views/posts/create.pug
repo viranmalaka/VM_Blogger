@@ -1,0 +1,71 @@
+doctype html
+html(lang='en')
+    head
+        meta(charset='utf-8')
+        meta(http-equiv='X-UA-Compatible', content='IE=edge')
+        meta(name='viewport', content='width=device-width, initial-scale=1')
+        meta(name='description', content='')
+        meta(name='author', content='')
+        title Blank Template for Bootstrap
+        // Bootstrap core CSS
+        link(href='/vendor/bootstrap/css/bootstrap.min.css', rel='stylesheet')
+        link(href='/vendor/select2/css/select2.min.css')
+
+        script(src='/vendor/jquery/jquery.min.js')
+        script(src='/vendor/bootstrap/js/bootstrap.min.js')
+        script(src='/vendor/tinymce/jquery.tinymce.min.js')
+        script(src='/vendor/tinymce/tinymce.min.js')
+        script(src='/vendor/select2/js/select2.js')
+        script.
+            tinymce.init({
+                selector: '#body',
+                theme: 'modern',
+                plugins: [
+                    'advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
+                    'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+                    'save table contextmenu directionality emoticons template paste textcolor'
+                ],
+                content_css: 'css/content.css',
+                toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons',
+                file_browser_callback: function (field_name, url, type, win) {
+                    if (type == 'image') $('#my_form input').click();
+                }
+
+            });
+
+    body
+        iframe#form_target(name='form_target', style='display:none')
+        form#my_form(action='/posts/upload', target='form_target', method='post', enctype='multipart/form-data', style='width:0px;height:0;overflow:hidden')
+            input(name='image', type='file', onchange="$('#my_form').submit();this.value='';")
+            input(name='test', type= 'text', value='this is test value')
+        .container
+            .row
+                form(role='form', method='post', action='/posts/create' enctype='multipart/form-data')
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='title') Blog Post Title
+                            input.form-control(type='text', placeholder='Title', name='title', id='title' class="")
+                        .form-group
+                            label.control-label(for='slug', id='slugLabel') Slug
+                            input.form-control(type='text', placeholder='Slug', name='slug', id='slug')
+                        .form-group
+                            label.control-label(for='tags') Tags
+                            select.select2-tags(class='js-states form-control', multiple='true' name='tags', id='tags')
+                        .form-group
+                            label.control-label(for='bgImage') Background Image
+                            input.form-control(type='file', name='bgImage', id='bgImage')
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='subtitle') Subtitle
+                            input.form-control(type='text', placeholder='Subtitle', name='subtitle', id='subtitle')
+                    .col-md-12.com-sm-12.col-lg-12
+                        .form-group
+                            textarea.form-control.input-lg(rows=15, id='body' name='body')
+
+
+
+                        button.btn(type='submit' style='margin-bottom:250px') Submit
+
+
+        script(src='/js/createBlogPost.js')
+
