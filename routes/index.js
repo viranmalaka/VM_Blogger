@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+    res.render('pages/home', { title: 'Malaka', header_image : 'home-bg.jpg' });
 });
 
 module.exports = router;

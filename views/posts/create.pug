@@ -8,8 +8,6 @@ html(lang='en')
         meta(name='author', content='')
         title Blank Template for Bootstrap
         // Bootstrap core CSS
-        link(href='/vendor/bootstrap/css/bootstrap.min.css', rel='stylesheet')
-        link(href='/vendor/select2/css/select2.min.css')
 
         script(src='/vendor/jquery/jquery.min.js')
         script(src='/vendor/bootstrap/js/bootstrap.min.js')
@@ -33,39 +31,48 @@ html(lang='en')
 
             });
 
+
+        link(href='/vendor/bootstrap/css/bootstrap.min.css', rel='stylesheet')
+        link(href='/vendor/select2/css/select2.css')
+
     body
         iframe#form_target(name='form_target', style='display:none')
-        form#my_form(action='/posts/upload', target='form_target', method='post', enctype='multipart/form-data', style='width:0px;height:0;overflow:hidden')
+        form#my_form(action='/posts/imgupload', target='form_target', method='post', enctype='multipart/form-data', style='width:0px;height:0;overflow:hidden')
             input(name='image', type='file', onchange="$('#my_form').submit();this.value='';")
             input(name='test', type= 'text', value='this is test value')
         .container
-            .row
-                form(role='form', method='post', action='/posts/create' enctype='multipart/form-data')
+            ul.errors
+                if errors
+                    each error, i in errors
+                        li.alert.alert-danger #{error}
+            form(role='form', method='post', action='/posts/create' enctype='multipart/form-data')
+                .row
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
-                            label.control-label(for='title') Blog Post Title
-                            input.form-control(type='text', placeholder='Title', name='title', id='title' class="")
+                            label.control-label Blog Post Title
+                            input.form-control(type='text', placeholder='Title', name='title', id='title' , value=_title)
+                    .col-md-6.col-sm-12.col-lg-6
                         .form-group
                             label.control-label(for='slug', id='slugLabel') Slug
-                            input.form-control(type='text', placeholder='Slug', name='slug', id='slug')
-                        .form-group
-                            label.control-label(for='tags') Tags
-                            select.select2-tags(class='js-states form-control', multiple='true' name='tags', id='tags')
-                        .form-group
-                            label.control-label(for='bgImage') Background Image
-                            input.form-control(type='file', name='bgImage', id='bgImage')
+                            input.form-control(type='text', placeholder='Slug', name='slug', id='slug', value=_slug)
+                .row
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
                             label.control-label(for='subtitle') Subtitle
-                            input.form-control(type='text', placeholder='Subtitle', name='subtitle', id='subtitle')
+                            input.form-control(type='text', placeholder='Subtitle', name='subtitle', id='subtitle', value = _subtitle)
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='tags') Tags
+                            select.select2-tags(class='form-control select2-multi', multiple='true' name='tags', id='tags')
+                .row
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='bgImage') Background Image
+                            input.form-control(type='file', name='bg-image', id='bgImage' )
                     .col-md-12.com-sm-12.col-lg-12
                         .form-group
-                            textarea.form-control.input-lg(rows=15, id='body' name='body')
-
-
+                            textarea.form-control.input-lg(rows=15, id='body' name='body')= _body
 
                         button.btn(type='submit' style='margin-bottom:250px') Submit
-
-
         script(src='/js/createBlogPost.js')
 

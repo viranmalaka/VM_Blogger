@@ -1,14 +1,28 @@
+//Imports
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mongo = require('mongodb');
+var mongoose = require('mongoose');
+var nodemailer = require('nodemailer');
+var crypto = require('crypto');
+var multer = require('multer');
+var session = require('express-session');
+var expressValidator = require('express-validator');
 
+//Route import
 var index = require('./routes/index');
 var users = require('./routes/users');
+var posts = require('./routes/posts');
 
 var app = express();
+
+//MongoDB
+mongoose.Promise = global.Promise;
+mongoose.connect('localhost:27017/myblog');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,11 +33,38 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(session({
+    secret : 'secret',
+    saveUninitialized : true,
+    resave : true
+}));
+
+//Express validator
+app.use(expressValidator({
+    errorFormatter: function(param, msg, value) {
+        var namespace = param.split('.')
+            , root    = namespace.shift()
+            , formParam = root;
+
+        while(namespace.length) {
+            formParam += '[' + namespace.shift() + ']';
+        }
+        return {
+            param : formParam,
+            msg   : msg,
+            value : value
+        };
+    }
+}));
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//routes
 app.use('/', index);
 app.use('/users', users);
+app.use('/posts', posts);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
