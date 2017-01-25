@@ -13,7 +13,7 @@ html(lang='en')
         script(src='/vendor/bootstrap/js/bootstrap.min.js')
         script(src='/vendor/tinymce/jquery.tinymce.min.js')
         script(src='/vendor/tinymce/tinymce.min.js')
-        script(src='/vendor/select2/js/select2.js')
+        script(src='/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js')
         script.
             tinymce.init({
                 selector: '#body',
@@ -23,7 +23,6 @@ html(lang='en')
                     'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
                     'save table contextmenu directionality emoticons template paste textcolor'
                 ],
-                content_css: 'css/content.css',
                 toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons',
                 file_browser_callback: function (field_name, url, type, win) {
                     if (type == 'image') $('#my_form input').click();
@@ -33,18 +32,17 @@ html(lang='en')
 
 
         link(href='/vendor/bootstrap/css/bootstrap.min.css', rel='stylesheet')
-        link(href='/vendor/select2/css/select2.css')
+        link(href='/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css')
 
     body
         iframe#form_target(name='form_target', style='display:none')
         form#my_form(action='/posts/imgupload', target='form_target', method='post', enctype='multipart/form-data', style='width:0px;height:0;overflow:hidden')
             input(name='image', type='file', onchange="$('#my_form').submit();this.value='';")
-            input(name='test', type= 'text', value='this is test value')
         .container
             ul.errors
                 if errors
                     each error, i in errors
-                        li.alert.alert-danger #{error}
+                        li.alert.alert-danger !{error.msg}
             form(role='form', method='post', action='/posts/create' enctype='multipart/form-data')
                 .row
                     .col-md-6.col-sm-12.col-lg-6
@@ -63,7 +61,7 @@ html(lang='en')
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
                             label.control-label(for='tags') Tags
-                            select.select2-tags(class='form-control select2-multi', multiple='true' name='tags', id='tags')
+                            input.form-control(type='text', name='tags', id='tags',data-role="tagsinput" )
                 .row
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group

@@ -19,9 +19,17 @@ var uploadImages = function () {
 //
 // $(function(){
 //     $('#slug').on('keyup', function(e){
-//         console.log(e.keyCode);
+//         var parameters = { slug: $(this).val() };
+//         $.get( '/checkSlug',parameters, function(data) {
+//             $('#slugLabel').html(data);
+//         });
 //     });
 // });
+
+var submitMe = function () {
+    //$('#main_form #hdBody').val($('#editable').html());
+    $('#main_form').submit();
+};
 
 $(document).ready(function () {
     $('#tags').tagsinput({
