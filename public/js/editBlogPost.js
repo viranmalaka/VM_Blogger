@@ -25,11 +25,11 @@ var uploadImages = function () {
 //         });
 //     });
 // });
-
-var submitMe = function () {
-    //$('#main_form #hdBody').val($('#editable').html());
-    $('#main_form').submit();
-};
+//
+// var submitMe = function () {
+//     //$('#main_form #hdBody').val($('#editable').html());
+//     $('#main_form').submit();
+// };
 
 $(document).ready(function () {
     $('#tags').tagsinput({

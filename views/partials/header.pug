@@ -1,0 +1,28 @@
+header.intro-header(style="background-image: url('" + header_image + "')")
+    .container
+        .row
+            .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+                if post_view
+                    .post-heading
+                        h1 #{title}
+                        h2.subheading #{subtitle}
+                        span.meta #{created_at}
+
+                else
+                    .site-heading
+                        h1 #{title}
+                        hr.small
+                        span.subheading #{subtitle}
+    //like button only for post view routes
+    if post_view
+        .row(style="position:relative;top:54px; margin-left:20px; margin-right:20px;")
+            //.text-right.col-md-9.col-lg-9(style="margin-top:20px")
+            each t in tags
+                a.pull-right(href="#" style="font-family: helvetica, sans-serif; padding-left:10px") #{t}
+            //.col-md-3.pull-right.col-lg-3
+            button(type="button" class="btn btn-info" id="btnLike" style="position:fixed;bottom:0px;right:25px;z-index:1000", onClick='submitLike()')
+                i(class='badge' id='LikeNum' style="margin-right:10px") #{likeCount}
+                i(class="fa fa-thumbs-o-up" id='icnLike')
+                input(type='checkbox' id='chkLike' style='visibility:hidden')
+
+

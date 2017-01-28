@@ -40,33 +40,11 @@ block content
                                     span.badge(style='margin:left: 200px') #{t}
                     hr
                 ul.pager
-                    li.next
-                        a(href="#") Older Posts
-                            span.glyphicon.glyphicon-arrow-right
+                    - for (var i = 1; i < pageCount; ++i) {
+                        li
+                            a(href="/posts/index?page=" + (i)) #{i}
+                    - }
 
-            .col-lg-4.col-md-2(style="font-family:'Open Sans','Helvetica Neue',Helvetica,Arial,sans-serif")
-                .panel.panel-default
-                    .panel-heading Search
-                    .panel-body
-                        .input-group
-
-                            input.form-control(type='text', placeholder='Search for...', id='txtSearch', onkeypress='handle(event)')
-                            span.input-group-btn
-                                button.btn(type='button', onclick="go()") Go!
-                .panel.panel-info
-                    .panel-heading Posts by tags
-                    .panel-body(style='font-size:14px')
-                        each t in tags
-                            a(href='/search/tags/' + t)
-                                span.glyphicon.glyphicon-tag #{t} &nbsp&nbsp
-
-                .panel.panel-success
-                    .panel-heading Top Rated Posts
-                    .panel-body
-                        ul.list-group
-                            each pst in top
-                                li.list-group-item
-                                    a(href='/posts/' + pst.slug) #{pst.title}
     script
         | var go = function(){
         |    console.log($('#txtSearch').val());

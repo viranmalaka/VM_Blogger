@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var monPaginate = require('mongoose-paginate');
 var Schema = mongoose.Schema;
 
 var schema = new Schema({
@@ -11,7 +12,10 @@ var schema = new Schema({
     user : {type : Schema.ObjectId, ref : 'User'},
     comments :{type : [{}]},
     created_at : {type : Date, required : true},
-    backgroundImg : {type : String, required: true}
+    backgroundImg : {type : String, required: true},
+    publish : {type : Boolean, required : true, default : false}
 });
+
+schema.plugin(monPaginate);
 
 module.exports = mongoose.model('BlogPost', schema);

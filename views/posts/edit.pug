@@ -19,7 +19,7 @@ html(lang='en')
     script(src='/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js')
     script.
         tinymce.init({
-            selector: '#editable',
+            selector: '#body',
             theme: 'modern',
             inline: true,
             plugins: [
@@ -72,15 +72,19 @@ html(lang='en')
                 .row
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
-                            label.control-label(for='bgImage') Background Image
+                            label.control-label(for='bgImage') Background Image (Image is not required. You can use previous one or override it.)
                             input.form-control(type='file', name='bg-image', id='bgImage' )
-                            input(type='hidden', value= '', name='body' id='hdBody')
-                        button.btn(onclick='submitMe()' style='margin-bottom:20px') Save
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='publish') Publish
+                                input.form-control(type='checkbox', name='publish', id='publish' )
 
-        .container
-            h1 Edit here
-            .row.blogPost(id='editable')
-                != post_body
+                .container
+                    h1 Edit here
+                    .row.blogPost(id='body')
+                        != post_body
+
+                button.btn(type='submit' style='margin-top:50px; margin-bottom: 10px') Save
         script(src='/js/editBlogPost.js')
 
     include ../partials/scripts

@@ -61,12 +61,16 @@ html(lang='en')
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
                             label.control-label(for='tags') Tags
-                            input.form-control(type='text', name='tags', id='tags',data-role="tagsinput" )
+                            input.form-control(type='text', name='tags', id='tags',data-role="tagsinput", value=_tag )
                 .row
                     .col-md-6.col-sm-12.col-lg-6
                         .form-group
                             label.control-label(for='bgImage') Background Image
                             input.form-control(type='file', name='bg-image', id='bgImage' )
+                    .col-md-6.col-sm-12.col-lg-6
+                        .form-group
+                            label.control-label(for='publish') Publish
+                                input.form-control(type='checkbox', name='publish', id='publish' )
                     .col-md-12.com-sm-12.col-lg-12
                         .form-group
                             textarea.form-control.input-lg(rows=15, id='body' name='body')= _body
