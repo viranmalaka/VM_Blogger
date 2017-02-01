@@ -180,9 +180,13 @@ function isLogIn(req, res, next) {
     }
 }
 
-//define 404 router
-router.get('*', function (req, res) {
+// //define 404 router
+// router.get('*', function (req, res) {
+//     res.render('pages/404')
+// });
+
+
+router.get('/404', function (req, res) {
     res.render('pages/404')
 });
-
 module.exports = router;

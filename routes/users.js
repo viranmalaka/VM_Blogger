@@ -4,21 +4,28 @@ var User  = require('../models/User');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 
-/* Get Register. */
-router.get('/588c36b1d8f0b14b2a91f7f2', isLogIn, function(req, res, next) {
+//hidden route for user reg. only for auth
+router.get('/588c36b1d8f0b14b2a91f7f2',
+    isLogIn,                            // check auth
+    function(req, res, next) {
     if(req.user.admin){
-        res.render('users/reg');
+        res.render('users/reg');        // send
     }
 });
 
-router.post('/register', isLogIn, function (req, res) {
+//reg post only for auth
+router.post('/register',
+    isLogIn,                            // check for auth
+    function (req, res) {
+
+    //define express validation
     req.checkBody('username').notEmpty();
     req.checkBody('password').notEmpty();
     req.checkBody('confirm').equals(req.body.password);
 
     var valError = req.validationErrors();
     if (valError){
-        console.log(valError);
+        console.log(valError);              //TODO handle
     }else{
         var newUser = new User({
             username : req.body.username,
@@ -28,6 +35,7 @@ router.post('/register', isLogIn, function (req, res) {
             if (err){
                 console.log(err)
             }else{
+                //redirect to login
                 res.redirect('/users/c66d43d948b8d28c3722099dcd6eea06');
             }
         });
