@@ -10,7 +10,7 @@ var monthNames = ["January", "February", "March", "April", "May", "June",
 ];
 
 
-/* GET home page. */
+//home page
 router.get('/', function(req, res, next) {
     BlogPost.find().sort({
         created_at : 1                  //get recent posts
@@ -22,15 +22,17 @@ router.get('/', function(req, res, next) {
             console.log(err1);          //TODO handle
         }else{
             output.forEach(function (post) {
-                // Create date to show in page
+                // Create date format to show in page
                 post.date = monthNames[post.created_at.getMonth()] +
                     " " + post.created_at.getDate() +
                     ", " + post.created_at.getFullYear();
             });
+
+            //finding the blog posts
             BlogPost.find().
             distinct('tags', function (err2, tags) {    //get all tags in the post collection
                 if (err2){
-                    console.log(err2);  //TODO handle
+                    console.log(err2);                  //TODO handle
                 }else{
                     BlogPost.find().sort({
                         likes: -1                       // get top rated post. most likes
@@ -42,6 +44,7 @@ router.get('/', function(req, res, next) {
                             console.log(err3);          //TODO handle
                         }else{
                             res.render('pages/home', {              // return all data
+                                headerTitle : "VM Blogger",
                                 title: 'Welcome to VM Blogger',
                                 subtitle:"I'm Viran Malaka",
                                 header_image : '/img/home-bg.jpg',
@@ -57,16 +60,19 @@ router.get('/', function(req, res, next) {
     });
 });
 
+//search by tag name
 router.get('/search/tags/:tag', function (req, res) {
     BlogPost.find({
-        tags : req.params.tag               //search by tag name
+        tags : req.params.tag,                          //search by tag name
+        publish : true                                  // visible only
     }).
     select('title subtitle slug tags created_at').      //select
     exec(function (err, posts) {
         if (err){
-            console.log(err);               //TODO handle
+            console.log(err);                           //TODO handle
         }else{
-            res.render('posts/search', {
+            res.render('posts/search', {                //send
+                headerTitle : 'VM Blogger Search',
                 posts : posts,
                 qry : req.params.tag
             });
@@ -74,7 +80,10 @@ router.get('/search/tags/:tag', function (req, res) {
     });
 });
 
+//search by titles
 router.get('/search/:qry', function (req, res) {
+
+    //hidden routers for admin
     var q = req.params.qry.split('.');
     if (q[0] == 'malaka is here'){
         if(q[1] == 'reg'){
@@ -84,12 +93,17 @@ router.get('/search/:qry', function (req, res) {
         }
         return 0;
     }
-    BlogPost.find({title : new RegExp(req.params.qry, 'i')}, function (err, posts) {
-        console.log(posts);
+
+
+    BlogPost.find({
+        title : new RegExp(req.params.qry, 'i'),            //finding regex
+        publish : true                                      //visible only
+    }, function (err, posts) {
         if (err){
-            console.log(err);
+            console.log(err);                               // TODO handle
         }else{
-            res.render('posts/search', {
+            res.render('posts/search', {                    //send
+                headerTitle : "VM Blogger Search",
                 posts : posts,
                 qry : req.params.qry
             });
@@ -97,25 +111,31 @@ router.get('/search/:qry', function (req, res) {
     });
 });
 
+//get contact page
 router.get('/contact', function (req, res) {
-    res.render('pages/contact',{
+    res.render('pages/contact',{                            //send response
+        headerTitle : 'VM Blogger - Contact',
         title: "Contact Me",
         subtitle:"Have questions? I have answers (maybe).",
         header_image : '/img/contact-bg.jpg'
     });
 });
 
+//post contact form by ajax
 router.post('/contact', function (req, res) {
+
+    // Define Express Validation
     req.checkBody('name', 'Name is required').notEmpty();
     req.checkBody('email', 'Email Address is required').notEmpty();
     req.checkBody('telephone', 'Telephone Number is required').notEmpty();
     req.checkBody('message', 'Message is required').notEmpty();
-    console.log(req.body);
+
     var valErrors = req.validationErrors();
-    if(valErrors){
-        res.send('Error');
-        console.log(valErrors);
+    if(valErrors){                              // if there is an validation error
+        console.log(valErrors);                 // TODO handle
     }else{
+
+        //create new Contact Object
         var c = new Contact();
         c.name = req.body.name;
         c.email = req.body.email;
@@ -124,25 +144,31 @@ router.post('/contact', function (req, res) {
 
         c.save(function (err, result) {
             if (err){
-                console.log(err);
+                console.log(err);               // TODO handle
             }else{
-                res.end();
+                res.end();                      // save successfully
             }
         })
     }
 
 });
 
-router.get('/contact/all', isLogIn, function (req, res) {
-    if (req.user.admin){
+
+// get all contact for admin
+router.get('/contact/all',
+    isLogIn,                                                    // check auth
+    function (req, res) {
+    if (req.user.admin){                                        // check admin
         Contact.find(function (err, result) {
-            res.render('pages/allcontact',{contacts : result});
+            res.render('pages/allcontact',{contacts : result}); // send response
         });
     }else{
-        res.redirect("/");
+        res.redirect("/");                                      // error redirect
     }
 });
 
+
+//function to check the authentication.
 function isLogIn(req, res, next) {
     if (req.isAuthenticated()){
         if(req.user.username == 'viranmalaka'){
@@ -154,6 +180,9 @@ function isLogIn(req, res, next) {
     }
 }
 
-
+//define 404 router
+router.get('*', function (req, res) {
+    res.render('pages/404')
+});
 
 module.exports = router;
