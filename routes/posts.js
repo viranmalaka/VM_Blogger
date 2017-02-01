@@ -23,42 +23,46 @@ Date.prototype.getFromFormat = function(format) {
     return format;
 };
 
+//index of posts
 router.get('/index', function (req, res) {
     BlogPosts.paginate({
-        publish : true                  // filter finish posts only
+        publish : true                                  // filter finish posts only
     }, {
-        page : req.query.page,          //read the query '/index?page=3'
-        limit : 8                       //set defalut limit
+        page : req.query.page,                          //read the query '/index?page=3'
+        limit : 8                                       //set default limit
     }, function (err, result) {
         if(result.docs.length == 0){
-            res.redirect('/posts/index?page=1');
+            res.redirect('/posts/index?page=1');        //if no docs in that page got to first one
         }
         res.render('posts/index', {
+            headerTitle: "VM Blogger - Posts",
             title: 'Welcome to VM Blogger',
             subtitle:"I'm Viran Malaka",
             header_image : '/img/allpost-bg.jpg',
-            posts: result.docs,         //get paginated docs
-            pageCount : result.total / 8 + 1 // determine how many pages
+            posts: result.docs,                         //get paginated docs
+            pageCount : result.total / 8 + 1            // determine how many pages
         });
     });
 });
 
+//get create route for auth only
 router.get('/create', isLogIn, function (req, res) {
     res.render('posts/create');
 });
 
+//post route for auth only
 router.post("/create" ,
-    uploadBg.single('bg-image'), // user multer upload image file
-    isLogIn,
+    uploadBg.single('bg-image'),                    // user multer upload image file
+    isLogIn,                                        // check auth
     function (req, res) {
-        //validations
+        //define express validations
         req.checkBody('title', 'Title is required').notEmpty();
         req.checkBody('slug', "Slug is required").notEmpty();
         req.checkBody('body', 'Body is required').notEmpty();
 
         var valErr = req.validationErrors();
         if (valErr) {                                   // if validation fails return back
-            res.render('posts/create', {
+            res.render('posts/create', {                // re send the page
                 errors : valErr,
                 _title : req.body.title,
                 _slug : req.body.slug,
@@ -74,7 +78,7 @@ router.post("/create" ,
                     msg: 'Background image is required',
                     value : ''
                 }];
-                res.render('posts/create', {
+                res.render('posts/create', {            // re send the page
                     errors : e,
                     _title : req.body.title,
                     _slug : req.body.slug,
@@ -84,10 +88,10 @@ router.post("/create" ,
                 });
             }else{
                 BlogPosts.find({
-                    slug : req.body.slug            //find by slug
+                    slug : req.body.slug                 //find by slug
                 }, function (err, slug_post) {
                     if (err){
-                        console.log(err);           //TODO handle
+                        console.log(err);                //TODO handle
                     }else{
                         if(slug_post.length == 0){
                             //create BlogPost
@@ -100,17 +104,14 @@ router.post("/create" ,
                             bp.created_at = new Date();         // set now
 
                             bp.backgroundImg = req.file.filename;
-                            if(req.body.publish == undefined){      // check publish
-                                bp.publish = false;
-                            }else{
-                                bp.publish = true;
-                            }
+
+                            bp.publish = (req.body.publish != undefined);    // check publish
 
                             bp.save(function (saveError, result) {
                                 if(saveError){
                                     console.log(saveError);     // TODO handle
                                 }else{
-                                    res.redirect('/posts/' + result.slug);
+                                    res.redirect('/posts/' + result.slug);  // show the post
                                 }
                             });
                         }else{
@@ -130,25 +131,45 @@ router.post("/create" ,
 });
 
 router.get("/:slug", function (req, res) {
-    BlogPosts.findOne({slug : req.params.slug, publish : true}, function (err, post) {
+    BlogPosts.findOne({slug : req.params.slug}, function (err, post) {
         if (err){
             console.log(err);       //TODO handle
         }else{
             if(post != null){
+
+                // set date format
                 post.comments.forEach(function (itm) {
                     itm.created_at = itm.created_at.getFromFormat("hh:ii - yyyy-mm-dd");
                 });
-                res.render('posts/view', {
-                    header_image : "/uploads/bg/" + post.backgroundImg,
-                    title : post.title,
-                    subtitle: post.subtitle,
-                    post_body : post.body,
-                    comments : post.comments,
-                    likeCount : post.likes, post_view : true,
-                    created_at : post.created_at.getFromFormat("hh:ii - yyyy-mm-dd"),
-                    tags : post.tags,
-                    _id : post._id
-                });
+                if(post.publish){                                                   // if only finish pages
+                    res.render('posts/view', {
+                        header_image : "/uploads/bg/" + post.backgroundImg,
+                        title : post.title,
+                        subtitle: post.subtitle,
+                        post_body : post.body,
+                        comments : post.comments,
+                        likeCount : post.likes, post_view : true,
+                        created_at : post.created_at.getFromFormat("hh:ii - yyyy-mm-dd"),
+                        tags : post.tags,
+                        _id : post._id
+                    });
+                }else{
+                    if (req.user){                                                   // not finish but auth
+                        res.render('posts/view', {
+                            header_image : "/uploads/bg/" + post.backgroundImg,
+                            title : post.title,
+                            subtitle: post.subtitle,
+                            post_body : post.body,
+                            comments : post.comments,
+                            likeCount : post.likes, post_view : true,
+                            created_at : post.created_at.getFromFormat("hh:ii - yyyy-mm-dd"),
+                            tags : post.tags,
+                            _id : post._id
+                        });
+                    }else{
+                        res.redirect('/404');                           // error page
+                    }
+                }
             }else{
                 res.render('pages/404');
             }
@@ -156,12 +177,18 @@ router.get("/:slug", function (req, res) {
     });
 });
 
-router.get('/edit/:slug',isLogIn, function (req, res) {
-    BlogPosts.findOne({slug : req.params.slug}, function (err, post) {
+
+//edit post for auth
+router.get('/edit/:slug',
+    isLogIn,                                // check auth
+    function (req, res) {
+    BlogPosts.findOne({
+        slug : req.params.slug              // search by the slug
+    }, function (err, post) {
         if (err){
-            console.log(err);
+            console.log(err);               //TODO handle
         }else{
-            res.render('posts/edit', {
+            res.render('posts/edit', {      // render
                 title : post.title,
                 slug : post.slug,
                 subtitle: post.subtitle,
@@ -174,14 +201,19 @@ router.get('/edit/:slug',isLogIn, function (req, res) {
     });
 });
 
-router.post('/edit/:slug',isLogIn, uploadBg.single('bg-image'), function (req, res) {
+router.post('/edit/:slug',
+    isLogIn,                                        // check auth
+    uploadBg.single('bg-image'),                    // user multer upload image file
+    function (req, res) {
+
+    //define express validation errors
     req.checkBody('title', 'Title is required').notEmpty();
     req.checkBody('slug', "Slug is required").notEmpty();
     req.checkBody('body', 'Body is required').notEmpty();
 
     var valErr = req.validationErrors();
     if (valErr) {
-        res.render('posts/edit', {errors : valErr,
+        res.render('posts/edit', {errors : valErr,          // if error return the form
             title : req.body.title,
             slug : req.body.slug,
             body : req.body.body,
@@ -191,12 +223,14 @@ router.post('/edit/:slug',isLogIn, uploadBg.single('bg-image'), function (req, r
     }else{
         BlogPosts.findOne({slug : req.params.slug}, function (err, slug_post) {
             if (err){
-                console.log(err);
+                console.log(err);                   //TODO handle
             }else {
                 BlogPosts.find({slug : req.body.slug}, function (e, newSlug) {
                     if(e){
-                        console.log(e);
+                        console.log(e);              // TODO handle
                     }else{
+
+                        //check the slug is exist
                         if (newSlug && (req.body.slug != req.params.slug)){
                             e = [{param:'slug', msg: 'slug is already used', value : ''}];
                             res.render('posts/create', {errors : e,
@@ -206,17 +240,15 @@ router.post('/edit/:slug',isLogIn, uploadBg.single('bg-image'), function (req, r
                                 subtitle : req.body.subtitle,
                                 tags : req.body.tags});
                         }else{
+
+                            //edit the blog post
                             slug_post.title = req.body.title;
                             slug_post.subtitle = req.body.subtitle;
                             slug_post.slug = req.body.slug;
                             slug_post.body = req.body.body;
                             slug_post.tags = req.body.tags.split(',');
 
-                            if(req.body.publish == undefined){      // check publish
-                                slug_post.publish = false;
-                            }else{
-                                slug_post.publish = true;
-                            }
+                            slug_post = (req.body.publish != undefined);        //set publish
                             slug_post.save(function (saveError, result) {
                                 if(saveError){
                                     console.log(saveError);
@@ -244,7 +276,11 @@ router.post('/imgupload', isLogIn, uploadPost.single('image'), function (req, re
     }
 });
 
+
+//add comment
 router.post('/addComment', function (req, res) {
+
+    //define express validation
     req.checkBody('name', "Name is required").notEmpty();
     req.checkBody('email', "Email is required").notEmpty();
     req.checkBody('comment', "Comment is empty").notEmpty();
@@ -252,7 +288,7 @@ router.post('/addComment', function (req, res) {
 
     var valErr = req.validationErrors();
     if (valErr){
-        res.send('Error');
+        res.send('Error');      // if error happens
     }else{
         var com = {
             name : req.body.name,
@@ -261,16 +297,20 @@ router.post('/addComment', function (req, res) {
             created_at : new Date(),
             show : true
         };
-        BlogPosts.findOne({_id : req.body.post_id}, function (err, post) {
+        BlogPosts.findOne({
+            _id : req.body.post_id
+        }, function (err, post) {
             post.comments.push(com);
             post.save(function (e, savadPost) {
-                console.log("post is updated");
+                console.log("comment added");
             });
             res.send(com);
         });
     }
 });
 
+
+//add like
 router.post("/submitLike", function (req, res) {
     if(req.body.post_id){
         BlogPosts.findOne({_id:req.body.post_id}, function (err, p) {
@@ -288,6 +328,8 @@ router.post("/submitLike", function (req, res) {
     }
 });
 
+
+//function to check auth
 function isLogIn(req, res, next) {
     console.log(req.isAuthenticated());
     console.log(req.user);
