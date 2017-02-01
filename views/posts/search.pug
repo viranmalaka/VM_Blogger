@@ -17,7 +17,11 @@ html(lang='en')
         .container
             .row
                 .col-lg-8.col-md-10.col-lg-offset-2.col-md-offset-2
+                    if posts.length == 0
+                        .alert.alert-info(role="alert") Oops... No result found.
+
                     each p in posts
+                        p #{posts.length == 0}
                         .post-preview
                             a(href='/posts/' + p.slug)
                                 h2.post-title  #{p.title}

@@ -1,0 +1,23 @@
+html
+    head
+        style
+            |table, th, td {
+            |    border: 1px solid black;
+            |   border-collapse: collapse;
+            | }
+            |th, td {
+            |   padding: 15px;
+            |}
+    body
+        table
+            tr
+                th Name
+                th Email
+                th Telephone
+                th Message
+            each c in contacts
+                tr
+                    td #{c.name}
+                    td #{c.email}
+                    td #{c.telephone}
+                    td #{c.message}

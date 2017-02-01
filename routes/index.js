@@ -2,11 +2,13 @@ var express = require('express');
 var router = express.Router();
 
 var BlogPost = require('../models/BlogPost');
+var Contact = require('../models/Contact');
 
 //Date formatting
 var monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 ];
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -56,9 +58,13 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/search/tags/:tag', function (req, res) {
-    BlogPost.find({tags : req.params.tag}, function (err, posts) {
+    BlogPost.find({
+        tags : req.params.tag               //search by tag name
+    }).
+    select('title subtitle slug tags created_at').      //select
+    exec(function (err, posts) {
         if (err){
-            console.log(err);
+            console.log(err);               //TODO handle
         }else{
             res.render('posts/search', {
                 posts : posts,
@@ -90,5 +96,64 @@ router.get('/search/:qry', function (req, res) {
         }
     });
 });
+
+router.get('/contact', function (req, res) {
+    res.render('pages/contact',{
+        title: "Contact Me",
+        subtitle:"Have questions? I have answers (maybe).",
+        header_image : '/img/contact-bg.jpg'
+    });
+});
+
+router.post('/contact', function (req, res) {
+    req.checkBody('name', 'Name is required').notEmpty();
+    req.checkBody('email', 'Email Address is required').notEmpty();
+    req.checkBody('telephone', 'Telephone Number is required').notEmpty();
+    req.checkBody('message', 'Message is required').notEmpty();
+    console.log(req.body);
+    var valErrors = req.validationErrors();
+    if(valErrors){
+        res.send('Error');
+        console.log(valErrors);
+    }else{
+        var c = new Contact();
+        c.name = req.body.name;
+        c.email = req.body.email;
+        c.telephone = req.body.telephone;
+        c.message = req.body.message;
+
+        c.save(function (err, result) {
+            if (err){
+                console.log(err);
+            }else{
+                res.end();
+            }
+        })
+    }
+
+});
+
+router.get('/contact/all', isLogIn, function (req, res) {
+    if (req.user.admin){
+        Contact.find(function (err, result) {
+            res.render('pages/allcontact',{contacts : result});
+        });
+    }else{
+        res.redirect("/");
+    }
+});
+
+function isLogIn(req, res, next) {
+    if (req.isAuthenticated()){
+        if(req.user.username == 'viranmalaka'){
+            req.user.admin = true
+        }
+        return next();
+    }else{
+        res.redirect('/')
+    }
+}
+
+
 
 module.exports = router;

@@ -7,11 +7,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-var nodemailer = require('nodemailer');
 var crypto = require('crypto');
 var multer = require('multer');
 var session = require('express-session');
 var expressValidator = require('express-validator');
+var flash = require('connect-flash');
+var passport = require('passport');
+var LocalStrategy = require('passport-local') ;
+
 
 //Route import
 var index = require('./routes/index');
@@ -33,6 +36,9 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use(session({
     secret : 'secret',
@@ -58,8 +64,21 @@ app.use(expressValidator({
     }
 }));
 
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Connect Flash
+app.use(flash());
+
+//Global Vars
+app.use(function (req, res, next) {
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    res.locals.user = req.user || null;
+    next();
+});
 
 //routes
 app.use('/', index);

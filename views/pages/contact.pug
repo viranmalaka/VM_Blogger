@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+    .container
+        .row
+            col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+                form(name="sentMessage" id="contactForm" novalidate)
+                    .row.control-group
+                        .form-group.col-xs-12.floating-label-form-group.controls
+                            label Name
+                            input#name(type="text" class="form-control" placeholder="Name" name="name" required data-validation-required-message="Please enter your name.")
+                            p(class="help-block text-danger")
+                    .row.control-group
+                        .form-group.col-xs-12.floating-label-form-group.controls
+                            label Email Address
+                            input#email(type="email" class="form-control" placeholder="Email Address" name="email" required data-validation-required-message="Please enter your email address.")
+                            p(class="help-block text-danger")
+                    .row.control-group
+                        .form-group.col-xs-12.floating-label-form-group.controls
+                            label Phone Number
+                            input#phone(type="tel" class="form-control" placeholder="Phone Number" name="phone" required data-validation-required-message="Please enter your phone number.")
+                            p(class="help-block text-danger")
+                    .row.control-group
+                        .form-group.col-xs-12.floating-label-form-group.controls
+                            label Message
+                            textarea#message(rows="5" class="form-control" placeholder="Message" name="message" required data-validation-required-message="Please enter a message.")
+                            p.help-block.text-danger
+                    br
+                    div(id="success")
+                        .row
+                            .form-group.col-xs-12
+                                button(type="submit" class="btn btn-default") Send
+block additional_scripts
+    // Contact Form JavaScript
+    script(src='/js/jqBootstrapValidation.js')
+    script(src='/js/contact_me.js')

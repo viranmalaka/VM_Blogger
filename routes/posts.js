@@ -28,24 +28,28 @@ router.get('/index', function (req, res) {
         publish : true                  // filter finish posts only
     }, {
         page : req.query.page,          //read the query '/index?page=3'
-        limit : 3                       //set defalut limit
+        limit : 8                       //set defalut limit
     }, function (err, result) {
+        if(result.docs.length == 0){
+            res.redirect('/posts/index?page=1');
+        }
         res.render('posts/index', {
             title: 'Welcome to VM Blogger',
             subtitle:"I'm Viran Malaka",
             header_image : '/img/allpost-bg.jpg',
             posts: result.docs,         //get paginated docs
-            pageCount : result.total / 3 + 1 // determine how many pages
+            pageCount : result.total / 8 + 1 // determine how many pages
         });
     });
 });
 
-router.get('/create', function (req, res) {
+router.get('/create', isLogIn, function (req, res) {
     res.render('posts/create');
 });
 
 router.post("/create" ,
     uploadBg.single('bg-image'), // user multer upload image file
+    isLogIn,
     function (req, res) {
         //validations
         req.checkBody('title', 'Title is required').notEmpty();
@@ -98,10 +102,8 @@ router.post("/create" ,
                             bp.backgroundImg = req.file.filename;
                             if(req.body.publish == undefined){      // check publish
                                 bp.publish = false;
-                                console.log("publish false" , req.body.publish);
                             }else{
                                 bp.publish = true;
-                                console.log("publish true" , req.body.publish);
                             }
 
                             bp.save(function (saveError, result) {
@@ -128,11 +130,10 @@ router.post("/create" ,
 });
 
 router.get("/:slug", function (req, res) {
-    BlogPosts.findOne({slug : req.params.slug}, function (err, post) {
+    BlogPosts.findOne({slug : req.params.slug, publish : true}, function (err, post) {
         if (err){
-            console.log(err);
+            console.log(err);       //TODO handle
         }else{
-            console.log(post == null);
             if(post != null){
                 post.comments.forEach(function (itm) {
                     itm.created_at = itm.created_at.getFromFormat("hh:ii - yyyy-mm-dd");
@@ -146,15 +147,16 @@ router.get("/:slug", function (req, res) {
                     likeCount : post.likes, post_view : true,
                     created_at : post.created_at.getFromFormat("hh:ii - yyyy-mm-dd"),
                     tags : post.tags,
-                    _id : post._id});
+                    _id : post._id
+                });
             }else{
-                res.send("404");
+                res.render('pages/404');
             }
         }
     });
 });
 
-router.get('/edit/:slug', function (req, res) {
+router.get('/edit/:slug',isLogIn, function (req, res) {
     BlogPosts.findOne({slug : req.params.slug}, function (err, post) {
         if (err){
             console.log(err);
@@ -172,7 +174,7 @@ router.get('/edit/:slug', function (req, res) {
     });
 });
 
-router.post('/edit/:slug',uploadBg.single('bg-image'), function (req, res) {
+router.post('/edit/:slug',isLogIn, uploadBg.single('bg-image'), function (req, res) {
     req.checkBody('title', 'Title is required').notEmpty();
     req.checkBody('slug', "Slug is required").notEmpty();
     req.checkBody('body', 'Body is required').notEmpty();
@@ -210,7 +212,11 @@ router.post('/edit/:slug',uploadBg.single('bg-image'), function (req, res) {
                             slug_post.body = req.body.body;
                             slug_post.tags = req.body.tags.split(',');
 
-
+                            if(req.body.publish == undefined){      // check publish
+                                slug_post.publish = false;
+                            }else{
+                                slug_post.publish = true;
+                            }
                             slug_post.save(function (saveError, result) {
                                 if(saveError){
                                     console.log(saveError);
@@ -225,12 +231,13 @@ router.post('/edit/:slug',uploadBg.single('bg-image'), function (req, res) {
                 });
             }
         });
-
     }
 });
 
+
+
 //Ajax Routes
-router.post('/imgupload', uploadPost.single('image'), function (req, res) {
+router.post('/imgupload', isLogIn, uploadPost.single('image'), function (req, res) {
     console.log(req.file);
     if (req.file){
         res.send("<script>top.$('.mce-btn.mce-open').parent().find('.mce-textbox').val('/uploads/posts/" + req.file.filename + "').closest('.mce-window').find('.mce-primary').click();</script>" )
@@ -280,5 +287,18 @@ router.post("/submitLike", function (req, res) {
         });
     }
 });
+
+function isLogIn(req, res, next) {
+    console.log(req.isAuthenticated());
+    console.log(req.user);
+    if (req.isAuthenticated()){
+        if(req.user.username == 'viranmalaka'){
+            req.user.admin = true
+        }
+        return next();
+    }else{
+        res.redirect('/')
+    }
+}
 
 module.exports = router;
